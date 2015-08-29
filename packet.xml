@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<data>
+    <meta>
+        <nombreBD>sociosBD</nombreBD>
+        <tipoBD>SQLite</tipoBD>
+    </meta>
+    <tabla nombre="paquete">
+        <campo clave="true">id_paquete</campo>
+        <campo tipo="CharField" tamanio="150" label="IP origen">ip_origen</campo>
+        <campo tipo="CharField" tamanio="150" label="IP destino">ip_destino</campo>
+        <campo tipo="IntegerField" label="Puerto origen">puerto_origen</campo>
+        <campo tipo="IntegerField" label="Puerto destino">puerto_destino</campo>
+        
+    </tabla>
+
+
+</data>
+

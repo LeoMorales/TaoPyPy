@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<data>
+    <meta>
+        <nombreBD>sociosBD</nombreBD>
+        <tipoBD>SQLite</tipoBD>
+    </meta>
+    <tabla nombre="producto">
+        <campo clave="true">id_producto</campo>
+        <campo tipo="CharField" tamanio="50">nombre</campo>
+        <campo tipo="CharField" tamanio="150">descripcion</campo>
+        <campo tipo="IntegerField">stock</campo>
+        <campo tipo="IntegerField" label="Cantidad minima">cantidad_minima</campo>
+        <campo tipo="IntegerField" label="Tiempo de reposicion">tiempo_de_reposicion</campo>
+        <campo tipo="ForeignKey">categoria</campo>
+        
+    </tabla>
+    <tabla nombre="retiro">
+        <campo clave="true">id_retiro</campo>
+        <campo tipo="CharField" tamanio="100" label="Retira">quien_retira</campo>
+        <campo tipo="CharField" tamanio="150">motivo</campo>
+        <campo tipo="IntegerField">cantidad</campo>
+        <campo tipo="DateField">fecha</campo>
+        <campo tipo="ForeignKey">producto</campo>
+    </tabla>
+    <tabla nombre="categoria">
+        <campo clave="true">id_categoria</campo>
+        <campo tipo="CharField" tamanio="50">nombre</campo>
+        <campo tipo="CharField" tamanio="150">descripcion</campo>
+    </tabla>
+    <tabla nombre="ingreso">
+        <campo clave="true">id_ingreso</campo>
+        <campo tipo="CharField" tamanio="100">proveedor</campo>
+        <campo tipo="DateField">fecha</campo>
+        <campo tipo="IntegerField">cantidad</campo>
+        <campo tipo="ForeignKey">producto</campo>
+    </tabla>
+
+
+</data>
+
