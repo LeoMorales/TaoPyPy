@@ -13,7 +13,8 @@ Ejemplo basico:
 
 Tenemos nuestro data.xml:
 
-.. code-block:: xml
+.. code-block:: html
+
     <?xml version="1.0"?>
     <data>
         <meta>
