@@ -269,6 +269,7 @@ def crear_main(manager, path_proyecto):
             str_actions += '\n'+template_conexion_actions.safe_substitute(context)
         
     relleno_main = {
+                    'MODELOS': manager.nombres_tablas_para_models(),
                     'CONEXIONES_ACTIONS': str_actions
     }
     archivo_main.write(template_main.safe_substitute(relleno_main))
@@ -323,14 +324,39 @@ def crear_dialogos(manager, path_dialogos):
         - manager: Objeto gestor de todas las tablas.
         - path_dialogos: ruta al directorio en donde se van a crear los dialogos.
     '''
-    from constants import DIALOGOS_MAIN
+    from constants import DIALOGOS_MAIN, DIALOGOS_FORANEAS
     template_dialog = Template(DIALOGOS_MAIN)
+    template_foraneas = Template(DIALOGOS_FORANEAS)
 
     for tabla in manager.tablas:
         nombre = path_dialogos+'widgetAlta{}.py'.format(tabla.nombre.capitalize())
         archivo_dialogo = open(nombre, 'w')
+        str_foraneas = ""
+        for campo in tabla.clavesForaneas():
+            contexto_campo = {
+                'NOMBRE_CAMPO': campo.nombre,
+                'NOMBRE_OBJETO': campo.nombre.capitalize()
+            }
+            str_foraneas += template_foraneas.safe_substitute(contexto_campo)
+
+        str_obtencion_de_datos = ""
+        for campo in tabla.campos:
+            if campo.esClave():
+                continue
+            str_obtencion_de_datos += "\n        "+campo.representacion_obtencion_dialogo()
+        
+        str_obtencion_de_datos += '\n        nuevo = {TABLA_NOMBRE}({LISTA_ATRIBUTOS})'.format(**{
+                'TABLA_NOMBRE': tabla.nombre.capitalize(),
+                'LISTA_ATRIBUTOS': tabla.campos_para_creacion()
+            })
+        str_obtencion_de_datos += '\n        self.session.add(nuevo)'
+        # str_obtencion_de_datos += '\n        print "CREADO: ", str(nuevo)'
+
         relleno = {#o contexto...
-            'NOMBRE_OBJETO': tabla.nombre.capitalize()
+            'NOMBRE_OBJETO': tabla.nombre.capitalize(),
+            'MODELOS': manager.nombres_tablas_para_models(),
+            'FORANEAS': str_foraneas,
+            'OBTENCION_DE_DATOS': str_obtencion_de_datos
         }
         archivo_dialogo.write(template_dialog.safe_substitute(relleno))
         archivo_dialogo.close()

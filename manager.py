@@ -30,6 +30,9 @@ class Tabla(object):
 	def clavesForaneas(self):
 		return filter(lambda campo: campo.esForanea(), self.campos)
 
+	def campos_para_creacion(self):
+		return ", ".join([campo.get_nombre() for campo in self.campos if not campo.esClave()])
+
 
 class Campo(object):
 	"""docstring for Campo"""
@@ -47,7 +50,7 @@ class Campo(object):
 	def esForanea(self):
 		if not self.tipo:
 			return False
-		return self.tipo.capitalize() == FORANEA
+		return self.tipo == FORANEA
 	
 	def esClave(self):
 		return self.es_clave
@@ -94,6 +97,14 @@ class Campo(object):
 		}
 		return representacion[self.tipo]
 
+	def representacion_obtencion_dialogo(self):
+		representacion = {
+			FORANEA: "{}_id = self.index_{}.get(self.ui.comboBox{}.currentIndex())".format(self.nombre, self.nombre, self.nombre.capitalize()),
+			ENTERO:"{} = self.ui.spinBox{}.value()".format(self.nombre, self.nombre.capitalize()),
+			CADENA: "{} = str(self.ui.lineEdit{}.text())".format(self.nombre, self.nombre.capitalize()),
+			FECHA: "{fecha} = self.ui.calendarWidget{fecha_capitalizada}.selectedDate()\n        from datetime import datetime\n        {fecha} = datetime({fecha}.year(), {fecha}.month(), {fecha}.day(), 9, 0, 0)".format(**{'fecha': self.nombre, 'fecha_capitalizada': self.nombre.capitalize()})
+		}
+		return representacion[self.tipo]		
 
 class Manager(object):
 	"""docstring for Manager"""

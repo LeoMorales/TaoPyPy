@@ -260,6 +260,9 @@ MAIN = """import sys
 from PyQt4 import QtGui, QtCore
 from forms.mainwindow import Ui_MainWindow
 from styles import STYLES
+from base_de_datos.db_management import crear_esquema
+from base_de_datos.models import $MODELOS #Ejemplo: Categoria, Producto
+from base_de_datos.conexion import Conexion
 
 class Main(QtGui.QMainWindow):
     def __init__(self):
@@ -267,6 +270,8 @@ class Main(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setStyleSheet(STYLES)
+        self.bd = crear_esquema()
+        self.session = Conexion.getSession()        
 
     @QtCore.pyqtSlot()
     def on_actionSalir_triggered(self):
@@ -574,8 +579,14 @@ WIDGET_CAMPO_TEMPLATE = """
           </item>
 """
 
-DIALOGOS_MAIN = """from forms.c_widgetAlta${NOMBRE_OBJETO} import Ui_FormAlta${NOMBRE_OBJETO}
+DIALOGOS_MAIN = """import sys
+sys.path.append('..')
+from forms.c_widgetAlta${NOMBRE_OBJETO} import Ui_FormAlta${NOMBRE_OBJETO}
 from PyQt4 import QtCore, QtGui
+
+from base_de_datos.conexion import Conexion
+#Manejo de objetos:
+from base_de_datos.models import $MODELOS #Por ejemplo: Categoria, Producto
 
 class FormAlta${NOMBRE_OBJETO}(QtGui.QWidget):
     '''Agregar la funcionalidad del widget'''
@@ -585,4 +596,29 @@ class FormAlta${NOMBRE_OBJETO}(QtGui.QWidget):
         self.ui = Ui_FormAlta${NOMBRE_OBJETO}()
         self.ui.setupUi(self)
 
+        self.session = Conexion.getSession()
+        #Si tiene foraneas cargar los combos correspondientes:
+  
+$FORANEAS 
+
+        self.ui.pushButtonOk.clicked.connect(self.alta)
+
+
+    def alta(self):
+
+        $OBTENCION_DE_DATOS
+        self.session.commit()
+        print "CREADO: ", str(nuevo)
+        self.hide()
+
+
 """
+
+DIALOGOS_FORANEAS = """
+        self.index_${NOMBRE_CAMPO} = {} #Para recuperar la $NOMBRE_CAMPO del combo seleccionada, sin tener que andar parseando cadenas.
+        for index, $NOMBRE_CAMPO in enumerate(${NOMBRE_OBJETO}.buscarTodos(self.session)):
+            self.index_${NOMBRE_CAMPO}.update({index: ${NOMBRE_CAMPO}.getId()})
+            self.ui.comboBox${NOMBRE_OBJETO}.insertItem(index, str(${NOMBRE_CAMPO}))
+
+"""
+
