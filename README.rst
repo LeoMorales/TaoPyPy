@@ -72,16 +72,17 @@ Alcance
 -------------------
 
 Version de Python: 2.7
+
 Requerimientos:
     - sqlalchemy
     - PyQt4
 
 Tipos de datos:
 
-    Entero -> IntegerField
-    Cadena -> CharField
-    Fecha -> DateField
-    Foranea -> ForeignKey (solo uno a muchos...)
+    - Entero -> IntegerField
+    - Cadena -> CharField
+    - Fecha -> DateField
+    - Foranea -> ForeignKey (solo uno a muchos...)
 
 
 -------------------
