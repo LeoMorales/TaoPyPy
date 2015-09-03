@@ -6,7 +6,7 @@ from utiles import directorioCrear, esDirectorio, archivoCrear, escribirPropieda
 from constants import CONEXION_TEMPLATE
 from constants import DMODELS_ENCABEZADO, DCLASE_TEMPLATE
 from constants import MODELS_ENCABEZADO, CLASE_TEMPLATE, ATRIBUTO_TEMPLATE
-from constants import MAIN, CONEXION_ACTION
+from constants import MAIN, CONEXION_ACTION, CONEXION_ABM
 from constants import GUI_ACTIONS_TEMPLATE, GUI_WIDGET_TEMPLATE, GUI_TEMPLATE_GENERAL
 from constants import DB_ENCABEZADO, DB_TABLA_TEMPLATE, DB_MAPPER_BASE, DB_MAPPER_PROPERTIES, DB_FOOTER
 from constants import CSS
@@ -80,7 +80,9 @@ def crear_dModels(manager, path_proyecto):
     for tabla in manager.tablas:
         nombre_de_clase = 'd'+tabla.nombre.capitalize()
         nombres_de_clases.append(nombre_de_clase)
-        clase_str = DCLASE_TEMPLATE.format(**{'DCLASE_NOMBRE': nombre_de_clase})
+        clase_str = DCLASE_TEMPLATE.format(**{'DCLASE_NOMBRE': nombre_de_clase,
+                                            'DCLASE_CAMPOS': tabla.str_get_campos(),
+                                            'DCLASE_HEADERS': tabla.str_get_encabezados_campos()})
         archivo_dmodels.write(clase_str)
 
     archivo_dmodels.close()
@@ -256,17 +258,26 @@ def crear_main(manager, path_proyecto):
 
     template_main = Template(MAIN)
     template_conexion_actions = Template(CONEXION_ACTION)
+    template_conexion_abm = Template(CONEXION_ABM)
     str_actions = '' #Se va llenando
     for tabla in manager.tablas:
         for action in ['Alta', 'Baja', 'Modificacion']:
             #Por cada tabla formamos el nombre de la action correspondiente. Por ej: action[Alta|Baja|Modificacion]Producto
             action_name = 'action{}{}'.format(action, tabla.nombre.capitalize())
-            context = {
-                'ACTION_NOMBRE': action_name,
-                'ACTION': action,
-                'NOMBRE_CLASE': tabla.nombre.capitalize()
-            }
-            str_actions += '\n'+template_conexion_actions.safe_substitute(context)
+            if action == 'Alta':
+                context = {
+                    'ACTION_NOMBRE': action_name,
+                    'ACTION': action,
+                    'NOMBRE_CLASE': tabla.nombre.capitalize()
+                }
+                str_actions += '\n'+template_conexion_actions.safe_substitute(context)
+            else:
+                context = {
+                    'ACTION_NOMBRE': action_name,
+                    'ACTION': action,
+                    'CLASE_ABM': tabla.nombre.capitalize()
+                }
+                str_actions += '\n'+template_conexion_abm.safe_substitute(context)
         
     relleno_main = {
                     'MODELOS': manager.nombres_tablas_para_models(),
@@ -279,8 +290,15 @@ def crear_widgets(manager, path_proyecto):
     '''
     Crea los widgets .ui de la aplicacion.
     '''
+    from constants import CENTRAL_WIDGET_ALTA, WIDGET_CAMPO_TEMPLATE, WIDGET_ABM_TEMPLATE
+    #Crear widget ABM:
+    template_widget_ABM = Template(WIDGET_ABM_TEMPLATE)
+    w_nombre = path_proyecto+'widgetABM.ui'
+    f = open(w_nombre, 'w')
+    f.write(WIDGET_ABM_TEMPLATE)
+    f.close()
 
-    from constants import CENTRAL_WIDGET_ALTA, WIDGET_CAMPO_TEMPLATE
+    #Crear widgets ALTA
     template_central_widget = Template(CENTRAL_WIDGET_ALTA)
     template_campos = Template(WIDGET_CAMPO_TEMPLATE)
     for tabla in manager.tablas:
@@ -324,6 +342,8 @@ def crear_dialogos(manager, path_dialogos):
         - manager: Objeto gestor de todas las tablas.
         - path_dialogos: ruta al directorio en donde se van a crear los dialogos.
     '''
+    #crear archivos utiles:
+    crear_utiles(path_dialogos)
     from constants import DIALOGOS_MAIN, DIALOGOS_FORANEAS
     template_dialog = Template(DIALOGOS_MAIN)
     template_foraneas = Template(DIALOGOS_FORANEAS)
@@ -362,3 +382,12 @@ def crear_dialogos(manager, path_dialogos):
         archivo_dialogo.close()
 
 
+def crear_utiles(path):
+    from constants import MODELO_TABLA_UTILES, CENTRAL_WIDGET_ABM
+    f = open(path+'ModeloTabla.py', 'w')
+    f.write(MODELO_TABLA_UTILES)
+    f.close()
+
+    f = open(path+'widgetABM.py', 'w') #Generico...
+    f.write(CENTRAL_WIDGET_ABM)
+    f.close()

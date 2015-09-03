@@ -36,6 +36,11 @@ def main(project_name, path, xml_file):
         print 'EJECUTANDO: ', command
         os.system(command)
 
+    command = "pyuic4 -x {} -o {}".format(path_proyecto + 'widgetABM.ui',
+                                        path_completo+'/src/forms/c_widgetABM.py')
+    print 'EJECUTANDO: ', command
+    os.system(command)
+
     #Crear dialogos (widgets que usan los widgets compilados y le agregan funcionalidad)
     path_proyecto = path_completo+'/src/dialogs/'
     crear_dialogos(manager, path_proyecto)

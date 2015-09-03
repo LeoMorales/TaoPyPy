@@ -33,6 +33,14 @@ class Tabla(object):
 	def campos_para_creacion(self):
 		return ", ".join([campo.get_nombre() for campo in self.campos if not campo.esClave()])
 
+	def str_get_campos(self):
+		a = 'self.getId(), '
+		return a+", ".join('self.%s'%campo.nombre for campo in self.camposSinClave())
+
+	def str_get_encabezados_campos(self):
+		a = "'ID', "
+		return a+", ".join('\'%s\''%str(campo.label) for campo in self.camposSinClave())
+
 
 class Campo(object):
 	"""docstring for Campo"""

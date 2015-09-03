@@ -52,6 +52,19 @@ class {DCLASE_NOMBRE}(object):
     def __str__(self):
         return '{DCLASE_NOMBRE} #%s'%(self.getId())
 
+    def valores_de_campos(self):
+        '''
+        Retorna los campos que se van a mostrar en la tabla de listado (ABM).
+        Si se modifican los campos devueltos, recordar modificar el correspondiente en nombres_de_campos
+        '''
+        return [ {DCLASE_CAMPOS} ]
+
+    def nombres_de_campos(self):
+        '''
+        Representacion de los campos
+        '''
+        return [ {DCLASE_HEADERS} ]
+
 """
 
 #=======================================================#
@@ -298,6 +311,18 @@ CONEXION_ACTION = """
         print "Click en accion $ACTION_NOMBRE"
         from dialogs.widget${ACTION}${NOMBRE_CLASE} import Form${ACTION}${NOMBRE_CLASE}
         widget = Form${ACTION}${NOMBRE_CLASE}(self)
+        self.setCentralWidget(widget)
+
+"""
+CONEXION_ABM = """
+    @QtCore.pyqtSlot()
+    def on_${ACTION_NOMBRE}_triggered(self):
+        '''
+        Codigo click $ACTION
+        '''
+        print "Click en accion $ACTION_NOMBRE"
+        from dialogs.widgetABM import FormABM
+        widget = FormABM(self, $CLASE_ABM)
         self.setCentralWidget(widget)
 
 """
@@ -579,6 +604,10 @@ WIDGET_CAMPO_TEMPLATE = """
           </item>
 """
 
+#=======================================================#
+# Constantes dialogos
+#=======================================================#
+
 DIALOGOS_MAIN = """import sys
 sys.path.append('..')
 from forms.c_widgetAlta${NOMBRE_OBJETO} import Ui_FormAlta${NOMBRE_OBJETO}
@@ -622,3 +651,274 @@ DIALOGOS_FORANEAS = """
 
 """
 
+#=======================================================#
+# Constantes utiles
+#=======================================================#
+MODELO_TABLA_UTILES = """from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+import sys
+
+
+class ModeloTabla(QAbstractTableModel):
+    '''
+    Modelo abstracto.
+    @params:
+        - datain: datos de la tabla. Por ej:
+            data = [['00','01','02'],
+                    ['10','11','12'],
+                    ['20','21','22']]
+        - headers: Lista de nombres de las cabeceras. Por ejemplo
+            headers = ['Nombre', 'Apellido', 'DNI']
+        - contenido: string que define lo que contiene la tabla. Se muestra en la columna vertical izquierda.
+    '''
+    def __init__(self, datain, headers, contenido='Producto', parent=None, *args):
+        QAbstractTableModel.__init__(self, parent, *args)
+        self.__data = datain
+        self.__headers = headers
+        self.__contenido = contenido
+
+    def rowCount(self, parent):
+        return len(self.__data)
+
+    def columnCount(self, parent):
+        return len(self.__data[0])
+
+    def data(self, index, role):
+        if not index.isValid():
+            return QVariant()
+        elif role != Qt.DisplayRole:
+            return QVariant()
+        return QVariant(self.__data[index.row()][index.column()])
+
+    def headerData(self, section, orientation, role):
+        
+        if role == Qt.DisplayRole:
+            if orientation == Qt.Horizontal:
+                if section < len(self.__headers):
+                    return self.__headers[section]
+                else:
+                    return "not implemented"
+            else:
+                return QString(self.__contenido+" %1").arg(section)
+
+
+"""
+
+WIDGET_ABM_TEMPLATE = """<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Widget_ABM</class>
+ <widget class="QWidget" name="Widget_ABM">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>495</width>
+    <height>375</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>ABM</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <item>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Minimum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <spacer name="verticalSpacer_4">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Minimum</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="labelTitulo">
+       <property name="text">
+        <string>TEXTO LABEL</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string/>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QTableView" name="tableViewData"/>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonEliminar">
+            <property name="text">
+             <string>Eliminar</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonModificar">
+            <property name="text">
+             <string>Modificar</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="pushButtonNuevo">
+            <property name="text">
+             <string>Nuevo...</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="verticalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>20</width>
+              <height>40</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
+     </item>
+     <item>
+      <spacer name="verticalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Vertical</enum>
+       </property>
+       <property name="sizeType">
+        <enum>QSizePolicy::Preferred</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>20</width>
+         <height>40</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="horizontalSpacer_2">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Minimum</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
+"""
+
+CENTRAL_WIDGET_ABM = """import sys
+sys.path.append('..')
+from forms.c_widgetABM import Ui_Widget_ABM
+from PyQt4 import QtCore, QtGui
+
+from base_de_datos.conexion import Conexion
+#Manejo de objetos:
+from base_de_datos.models import Producto ,Retiro ,Categoria ,Ingreso #Por ejemplo: Categoria, Producto
+
+#Modelo de la table view del dialogo:
+from ModeloTabla import ModeloTabla
+
+class FormABM(QtGui.QWidget):
+    '''Widget generico. Lista objetos y permite ABM'''
+    def __init__(self, parent=None, clase=None):
+        super(FormABM, self).__init__(parent)
+        self.parent = parent
+        self.ui = Ui_Widget_ABM()
+        self.ui.setupUi(self)
+        self.session = Conexion.getSession()
+
+        if clase:
+            self.ui.labelTitulo.setText(QtCore.QString('%ss' % clase.__name__))
+
+        self.clase = clase
+        self.elementos_indexes = {} #lleva el control indice_tabla - id_producto
+        self.actualizarDatosTabla()
+  
+    def actualizarDatosTabla(self):
+        #*Llenar la tabla de elementos:
+        elementos_all = self.clase.buscarTodos(self.session)
+        #**enviar al table model una lista de listas con los datos de los elementos:
+        elementos = []
+        headers = []
+        for index, elemento in enumerate(elementos_all):
+            self.elementos_indexes.update({index:elemento.getId()}) #En el indice actual, va el elemento con el id...
+            # elementos.append([
+            #                 elemento.getId(),
+            #                 elemento.nombre,
+            #                 elemento.descripcion,
+            #                 elemento.stock
+            #                 ])
+            elementos.append(elemento.valores_de_campos())
+            # headers = ['ID', 'Nombre', 'Descripcion', 'Stock']
+            headers = elemento.nombres_de_campos()
+
+        if not elementos:
+            elementos = ['---']
+            headers = ['La tabla no posee elementos.']
+        print "ENVIANDO ELEMENTOS: ", elementos
+        print "ENVIANDO headers: ", headers
+        tablemodel = ModeloTabla(elementos, headers, self.clase.__name__, self)
+        self.ui.tableViewData.setModel(tablemodel)
+        self.ui.tableViewData.selectRow(0) #Para que haya al menos una fila elegida por defecto
+        self.ui.tableViewData.setSelectionMode(QtGui.QAbstractItemView.SingleSelection) #para que no se puedan seleccionar multiples filas
+
+"""
