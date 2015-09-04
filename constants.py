@@ -322,10 +322,34 @@ CONEXION_ABM = """
         '''
         print "Click en accion $ACTION_NOMBRE"
         from dialogs.widgetABM import FormABM
-        widget = FormABM(self, $CLASE_ABM)
+        widget = FormABM(self, $CLASE_ABM, self.on_baja${CLASE_ABM}_callback, self.on_modificar${CLASE_ABM}_callback, self.on_nuevo${CLASE_ABM}_callback)
         self.setCentralWidget(widget)
 
 """
+
+MAIN_CALLBACKS_TEMPLATE = """
+    def on_baja${TABLA_NOMBRE}_callback(self, elemento):
+        print '#'*20
+        print 'BAJA: ', elemento.nombre
+        print '#'*20
+
+    def on_modificar${TABLA_NOMBRE}_callback(self, elemento):
+        print '#'*20
+        print 'Modificar: ', elemento.nombre
+        print '#'*20
+
+    def on_nuevo${TABLA_NOMBRE}_callback(self, elemento):
+        print '#'*20
+        print 'NUEVO: ', elemento.nombre
+        print '#'*20
+        self.on_actionAlta${TABLA_NOMBRE}_triggered()
+
+"""
+
+
+#=======================================================#
+# Constates archivo styles:
+#=======================================================#
 
 CSS = """STYLES = '''
 QMainWindow{
@@ -878,8 +902,16 @@ from base_de_datos.models import Producto ,Retiro ,Categoria ,Ingreso #Por ejemp
 from ModeloTabla import ModeloTabla
 
 class FormABM(QtGui.QWidget):
-    '''Widget generico. Lista objetos y permite ABM'''
-    def __init__(self, parent=None, clase=None):
+    '''
+    Widget generico. Lista objetos y permite ABM
+    @params:
+        - parent.
+        - clase: Clase del modelo sobre la cual se esta realizando ABM.
+        - callback_baja: funcion que se va a ejecutar cuando se haga click en el boton Eliminar del widget.
+        - callback_modificar: funcion que se va a ejecutar cuando se haga click en el boton Modificar del widget.
+        - callback_alta: funcion que se va a ejecutar cuando se haga click en el boton Nuevo... del widget.
+    '''
+    def __init__(self, parent=None, clase=None, callback_baja=None, callback_modificar=None, callback_alta=None):
         super(FormABM, self).__init__(parent)
         self.parent = parent
         self.ui = Ui_Widget_ABM()
@@ -892,6 +924,31 @@ class FormABM(QtGui.QWidget):
         self.clase = clase
         self.elementos_indexes = {} #lleva el control indice_tabla - id_producto
         self.actualizarDatosTabla()
+
+        self.callback_baja = callback_baja
+        self.callback_modificar = callback_modificar
+        self.callback_alta = callback_alta
+        self.ui.pushButtonEliminar.clicked.connect(self.on_baja)
+        self.ui.pushButtonModificar.clicked.connect(self.on_modificar)
+        self.ui.pushButtonNuevo.clicked.connect(self.on_alta)
+
+    def on_baja(self):
+        #beautiful spanglish
+        self.callback_baja(self.elemento_seleccionado())
+
+    def on_modificar(self):
+        #beautiful spanglish
+        self.callback_modificar(self.elemento_seleccionado())
+
+    def on_alta(self):
+        #beautiful spanglish
+        self.callback_alta(self.elemento_seleccionado())
+  
+    def elemento_seleccionado(self):
+        index = self.ui.tableViewData.selectedIndexes()[0].row()
+        elemento_seleccionado = self.clase.buscarPorID(self.session, self.elementos_indexes.get(index))
+        return elemento_seleccionado
+
   
     def actualizarDatosTabla(self):
         #*Llenar la tabla de elementos:

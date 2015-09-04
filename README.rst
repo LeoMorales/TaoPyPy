@@ -2,8 +2,7 @@
 TaoPyPy
 ****************************************
 
-TaoPyPy quiere llegar a ser una especie framework pero todavía le falta.
-Por ahora nos referiremos a él como automatizador/ahorrador de pasos comunes para crear una app python que use PyQt...
+Automatizador/ahorrador de pasos comunes para crear una app python que use PyQt...
 En resumen, recibe un archivo xml, al cual analiza y en base a él crea las tablas, objetos e interfaz básica necesaria.
 
 
@@ -55,6 +54,10 @@ Tenemos nuestro data.xml:
 .. code-block:: bash
 
     $ python taopypy.py --new MiProyecto --dataModelSource path/al/archivo/data.xml
+
+    #Si lo clonaron, directamente:
+
+    $ python taopypy.py --new MiProyecto
 
 El resultado será un proyecto nuevo en la carpeta Proyectos/MiProyecto
 

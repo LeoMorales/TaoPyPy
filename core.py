@@ -6,7 +6,7 @@ from utiles import directorioCrear, esDirectorio, archivoCrear, escribirPropieda
 from constants import CONEXION_TEMPLATE
 from constants import DMODELS_ENCABEZADO, DCLASE_TEMPLATE
 from constants import MODELS_ENCABEZADO, CLASE_TEMPLATE, ATRIBUTO_TEMPLATE
-from constants import MAIN, CONEXION_ACTION, CONEXION_ABM
+from constants import MAIN, CONEXION_ACTION, CONEXION_ABM, MAIN_CALLBACKS_TEMPLATE
 from constants import GUI_ACTIONS_TEMPLATE, GUI_WIDGET_TEMPLATE, GUI_TEMPLATE_GENERAL
 from constants import DB_ENCABEZADO, DB_TABLA_TEMPLATE, DB_MAPPER_BASE, DB_MAPPER_PROPERTIES, DB_FOOTER
 from constants import CSS
@@ -259,6 +259,7 @@ def crear_main(manager, path_proyecto):
     template_main = Template(MAIN)
     template_conexion_actions = Template(CONEXION_ACTION)
     template_conexion_abm = Template(CONEXION_ABM)
+    template_callbacks = Template(MAIN_CALLBACKS_TEMPLATE)
     str_actions = '' #Se va llenando
     for tabla in manager.tablas:
         for action in ['Alta', 'Baja', 'Modificacion']:
@@ -278,6 +279,11 @@ def crear_main(manager, path_proyecto):
                     'CLASE_ABM': tabla.nombre.capitalize()
                 }
                 str_actions += '\n'+template_conexion_abm.safe_substitute(context)
+
+        #Luego de crear las conexiones de los actions, crear los callbacks para el widget ABM:
+        str_actions += '\n'+template_callbacks.safe_substitute({
+                'TABLA_NOMBRE': tabla.nombre.capitalize()
+            })
         
     relleno_main = {
                     'MODELOS': manager.nombres_tablas_para_models(),
