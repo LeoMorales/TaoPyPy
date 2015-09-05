@@ -89,13 +89,8 @@ Tipos de datos:
 
 
 -------------------
-Trabajo por hacer
+Trabajo en progreso...
 -------------------
-
-- Me falta todavía:
-    - Agregar funcionalidad de Alta, Modificacion y Borrado a Admin.
-    - Una documentación validLA Documentacion.
-    - Entre otras cosas...
 
 
 Basado en un trabajo realizado por Seba Shanz -> http://infortips.blogspot.com.ar/2012/11/framework-python.html
