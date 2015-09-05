@@ -366,10 +366,14 @@ def crear_dialogos(manager, path_dialogos):
             str_foraneas += template_foraneas.safe_substitute(contexto_campo)
 
         str_obtencion_de_datos = ""
+        str_setup_datos = ""
+        str_datos_para_modificar = ""
         for campo in tabla.campos:
             if campo.esClave():
                 continue
             str_obtencion_de_datos += "\n        "+campo.representacion_obtencion_dialogo()
+            str_setup_datos += "\n        "+campo.representacion_setup_para_modificar()
+            str_datos_para_modificar += "\n        "+campo.representacion_datos_para_modificar()
         
         str_obtencion_de_datos += '\n        nuevo = {TABLA_NOMBRE}({LISTA_ATRIBUTOS})'.format(**{
                 'TABLA_NOMBRE': tabla.nombre.capitalize(),
@@ -382,7 +386,9 @@ def crear_dialogos(manager, path_dialogos):
             'NOMBRE_OBJETO': tabla.nombre.capitalize(),
             'MODELOS': manager.nombres_tablas_para_models(),
             'FORANEAS': str_foraneas,
-            'OBTENCION_DE_DATOS': str_obtencion_de_datos
+            'OBTENCION_DE_DATOS': str_obtencion_de_datos,
+            'SETUP_DE_DATOS': str_setup_datos,
+            'DATOS_PARA_MODIFICAR': str_datos_para_modificar
         }
         archivo_dialogo.write(template_dialog.safe_substitute(relleno))
         archivo_dialogo.close()

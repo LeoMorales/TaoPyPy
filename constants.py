@@ -332,11 +332,26 @@ MAIN_CALLBACKS_TEMPLATE = """
         print '#'*20
         print 'BAJA: ', elemento.nombre
         print '#'*20
+        respuesta = QtGui.QMessageBox.warning(self,'Baja',
+                                "El elemento va a ser eliminado de forma permanente. Desea continuar?",
+                                QtGui.QMessageBox.Ok,
+                                QtGui.QMessageBox.Cancel)
+
+        if respuesta == QtGui.QMessageBox.Ok:
+            print 'ELIMINAR!'
+            self.session.delete(elemento)
+            self.session.commit()
+        elif respuesta == QtGui.QMessageBox.Cancel:
+            print 'CANCELAR!'
+
 
     def on_modificar${TABLA_NOMBRE}_callback(self, elemento):
         print '#'*20
         print 'Modificar: ', elemento.nombre
         print '#'*20
+        from dialogs.widgetAlta${TABLA_NOMBRE} import FormAlta${TABLA_NOMBRE}
+        widget = FormAlta${TABLA_NOMBRE}(self, elemento)
+        self.setCentralWidget(widget)        
 
     def on_nuevo${TABLA_NOMBRE}_callback(self, elemento):
         print '#'*20
@@ -643,7 +658,7 @@ from base_de_datos.models import $MODELOS #Por ejemplo: Categoria, Producto
 
 class FormAlta${NOMBRE_OBJETO}(QtGui.QWidget):
     '''Agregar la funcionalidad del widget'''
-    def __init__(self, parent):
+    def __init__(self, parent, elemento_a_modificar=None):
         super(FormAlta${NOMBRE_OBJETO}, self).__init__(parent)
         self.parent = parent
         self.ui = Ui_FormAlta${NOMBRE_OBJETO}()
@@ -654,14 +669,39 @@ class FormAlta${NOMBRE_OBJETO}(QtGui.QWidget):
   
 $FORANEAS 
 
-        self.ui.pushButtonOk.clicked.connect(self.alta)
+        if elemento_a_modificar:
+            self.ui.labelTitulo.setText(QtCore.QString('Modificacion ${NOMBRE_OBJETO}:'))
+            self.elemento_a_modificar = elemento_a_modificar
+            self.ui.pushButtonOk.clicked.connect(self.modificacion)
+            self.setup_para_modificar()
+        else:
+            self.ui.pushButtonOk.clicked.connect(self.alta)
 
+    def get_clave_del_elemento(self, id_elemento_buscado, diccionario):
+        for index, id_elemento in diccionario.iteritems():
+            if id_elemento == id_elemento_buscado:
+                return index
 
     def alta(self):
-
         $OBTENCION_DE_DATOS
         self.session.commit()
+        QtGui.QMessageBox.information(self,"Alta","Alta registrada con exito!")
         print "CREADO: ", str(nuevo)
+        self.hide()
+
+    def setup_para_modificar(self):
+        # self.ui.lineEditNombre.setText(QtCore.QString("%s"%self.elemento_a_modificar.nombre))
+        # self.ui.lineEditDescripcion.setText(QtCore.QString("%s"%self.elemento_a_modificar.descripcion))
+        $SETUP_DE_DATOS
+
+
+    def modificacion(self):
+        # self.elemento_a_modificar.nombre = str(self.ui.lineEditNombre.text())
+        # self.elemento_a_modificar.descripcion = str(self.ui.lineEditDescripcion.text())
+        $DATOS_PARA_MODIFICAR
+        self.session.commit()
+        QtGui.QMessageBox.information(self,"Modificacion","Modificacion registrada con exito!")
+        print "MODIFICADO: ", str(self.elemento_a_modificar)
         self.hide()
 
 
@@ -935,6 +975,7 @@ class FormABM(QtGui.QWidget):
     def on_baja(self):
         #beautiful spanglish
         self.callback_baja(self.elemento_seleccionado())
+        self.actualizarDatosTabla()        
 
     def on_modificar(self):
         #beautiful spanglish
@@ -977,5 +1018,6 @@ class FormABM(QtGui.QWidget):
         self.ui.tableViewData.setModel(tablemodel)
         self.ui.tableViewData.selectRow(0) #Para que haya al menos una fila elegida por defecto
         self.ui.tableViewData.setSelectionMode(QtGui.QAbstractItemView.SingleSelection) #para que no se puedan seleccionar multiples filas
+        self.ui.tableViewData.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
 
 """

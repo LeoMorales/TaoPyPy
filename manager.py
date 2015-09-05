@@ -114,6 +114,25 @@ class Campo(object):
 		}
 		return representacion[self.tipo]		
 
+	def representacion_setup_para_modificar(self):
+		representacion = {
+			CADENA: "self.ui.lineEdit{}.setText(QtCore.QString('%s'%self.elemento_a_modificar.{}))".format(self.nombre.capitalize(), self.nombre),
+			ENTERO: "self.ui.spinBox{}.setValue(self.elemento_a_modificar.{})".format(self.nombre.capitalize(), self.nombre),
+			# FORANEA: "self.ui.comboBox{}.setCurrentIndex(self.index_{}.get(self.elemento_a_modificar.{}))".format(self.nombre.capitalize(), self.nombre, self.nombre),
+			FORANEA: "self.ui.comboBox{}.setCurrentIndex(self.get_clave_del_elemento(self.elemento_a_modificar.{}_id, self.index_{}))".format(self.nombre.capitalize(), self.nombre, self.nombre),
+			FECHA: "\n"
+		}
+		return representacion[self.tipo]		
+
+	def representacion_datos_para_modificar(self):
+		representacion = {
+			CADENA: "self.elemento_a_modificar.{} = str(self.ui.lineEdit{}.text())".format(self.nombre, self.nombre.capitalize()),
+			ENTERO: "self.elemento_a_modificar.{} = self.ui.spinBox{}.value()".format(self.nombre, self.nombre.capitalize()),
+			FORANEA: "self.elemento_a_modificar.{}_id = self.index_{}.get(self.ui.comboBox{}.currentIndex())".format(self.nombre, self.nombre, self.nombre.capitalize()),
+			FECHA: "{fecha} = self.ui.calendarWidget{fecha_capitalizada}.selectedDate()\n        from datetime import datetime\n        {fecha} = datetime({fecha}.year(), {fecha}.month(), {fecha}.day(), 9, 0, 0)\n        self.elemento_a_modificar.{fecha} = {fecha}".format(**{'fecha': self.nombre, 'fecha_capitalizada': self.nombre.capitalize()})
+		}
+		return representacion[self.tipo]		
+
 class Manager(object):
 	"""docstring for Manager"""
 	def __init__(self, nombreBD, tipoBD, tablas=[]):
