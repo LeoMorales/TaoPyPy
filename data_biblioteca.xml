@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<data>
+    <meta>
+        <nombreBD>bibliotecaBD</nombreBD>
+        <tipoBD>SQLite</tipoBD>
+    </meta>
+    <tabla nombre="libro">
+        <campo clave="true">id_libro</campo>
+        <campo tipo="CharField" tamanio="50">nombre</campo>
+        <campo tipo="IntegerField" label="Cantidad de hojas">cantidad_hojas</campo>
+        <campo tipo="ForeignKey">autor</campo>
+        <campo tipo="ForeignKey">editorial</campo>
+        
+    </tabla>
+    <tabla nombre="autor">
+        <campo clave="true">id_autor</campo>
+        <campo tipo="CharField" tamanio="50">nombre</campo>
+        <campo tipo="CharField" tamanio="50">apellido</campo>
+    </tabla>
+    <tabla nombre="editorial">
+        <campo clave="true">id_editorial</campo>
+        <campo tipo="CharField" tamanio="50">nombre</campo>
+    </tabla>
+
+
+</data>
+

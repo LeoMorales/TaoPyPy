@@ -936,7 +936,7 @@ from PyQt4 import QtCore, QtGui
 
 from base_de_datos.conexion import Conexion
 #Manejo de objetos:
-from base_de_datos.models import Producto ,Retiro ,Categoria ,Ingreso #Por ejemplo: Categoria, Producto
+from base_de_datos.models import $MODELOS #Por ejemplo: Categoria, Producto
 
 #Modelo de la table view del dialogo:
 from ModeloTabla import ModeloTabla

@@ -3,13 +3,7 @@ import xml.etree.ElementTree as ET
 from string import Template
 from manager import Manager, Tabla, Campo
 from utiles import directorioCrear, esDirectorio, archivoCrear, escribirPropiedadArchivoConfiguracion
-from constants import CONEXION_TEMPLATE
-from constants import DMODELS_ENCABEZADO, DCLASE_TEMPLATE
-from constants import MODELS_ENCABEZADO, CLASE_TEMPLATE, ATRIBUTO_TEMPLATE
-from constants import MAIN, CONEXION_ACTION, CONEXION_ABM, MAIN_CALLBACKS_TEMPLATE
-from constants import GUI_ACTIONS_TEMPLATE, GUI_WIDGET_TEMPLATE, GUI_TEMPLATE_GENERAL
-from constants import DB_ENCABEZADO, DB_TABLA_TEMPLATE, DB_MAPPER_BASE, DB_MAPPER_PROPERTIES, DB_FOOTER
-from constants import CSS
+import constants
 
 def parsear_xml(xml_file):
     '''
@@ -56,7 +50,7 @@ def crearConexionFile(nombreBD, path_proyecto):
         Crea el archivo de conexion
     '''
 
-    contenido = CONEXION_TEMPLATE.format(**{'NOMBRE_BASE_DE_DATOS': nombreBD})
+    contenido = constants.CONEXION_TEMPLATE.format(**{'NOMBRE_BASE_DE_DATOS': nombreBD})
     nombre = path_proyecto+'conexion.py'
     archivo_conexion = open(nombre , 'w')
     archivo_conexion.write(contenido)
@@ -74,13 +68,13 @@ def crear_dModels(manager, path_proyecto):
 
     nombre = path_proyecto+'dmodels.py'
     archivo_dmodels = open(nombre, 'w')
-    archivo_dmodels.write(DMODELS_ENCABEZADO)
+    archivo_dmodels.write(constants.DMODELS_ENCABEZADO)
 
     nombres_de_clases = [] #nos vamos a guardar los nombres de las clases creadas.
     for tabla in manager.tablas:
         nombre_de_clase = 'd'+tabla.nombre.capitalize()
         nombres_de_clases.append(nombre_de_clase)
-        clase_str = DCLASE_TEMPLATE.format(**{'DCLASE_NOMBRE': nombre_de_clase,
+        clase_str = constants.DCLASE_TEMPLATE.format(**{'DCLASE_NOMBRE': nombre_de_clase,
                                             'DCLASE_CAMPOS': tabla.str_get_campos(),
                                             'DCLASE_HEADERS': tabla.str_get_encabezados_campos()})
         archivo_dmodels.write(clase_str)
@@ -100,7 +94,7 @@ def crear_Models(manager, clases, path_proyecto):
 
     nombre = path_proyecto+'models.py'
     archivo_models = open(nombre, 'w')
-    encabezado = MODELS_ENCABEZADO.format(**{'CLASES_DE_DMODELS': ' ,'.join(clases)})
+    encabezado = constants.MODELS_ENCABEZADO.format(**{'CLASES_DE_DMODELS': ' ,'.join(clases)})
     archivo_models.write(encabezado)
 
     for tabla in manager.tablas:
@@ -108,9 +102,9 @@ def crear_Models(manager, clases, path_proyecto):
         data = {
                 'CLASE_NOMBRE': tabla.nombre.capitalize(),
                 'LISTA_ATRIBUTOS': ' ,'.join([c.get_nombre() for c in tabla.camposSinClave()]),
-                'ASIGNACION_ATRIBUTOS': '\n'.join([ATRIBUTO_TEMPLATE.format(**{'ATRIBUTO_NOMBRE':campo.get_nombre()}) for campo in tabla.camposSinClave()])
+                'ASIGNACION_ATRIBUTOS': '\n'.join([constants.ATRIBUTO_TEMPLATE.format(**{'ATRIBUTO_NOMBRE':campo.get_nombre()}) for campo in tabla.camposSinClave()])
                 }
-        clase_str = CLASE_TEMPLATE.format(**data)
+        clase_str = constants.CLASE_TEMPLATE.format(**data)
         archivo_models.write(clase_str)
 
     archivo_models.close()
@@ -124,7 +118,7 @@ def crear_db_management(manager, path_proyecto):
             'MODELOS':manager.nombres_tablas_para_models(),
             'DMODELOS': manager.nombres_tablas_para_dmodels()
             }
-    encabezado = DB_ENCABEZADO.format(**data)
+    encabezado = constants.DB_ENCABEZADO.format(**data)
     nombre = path_proyecto+'db_management.py'
     archivo_db_management = open(nombre, 'w')
     archivo_db_management.write(encabezado)
@@ -135,7 +129,7 @@ def crear_db_management(manager, path_proyecto):
                 'TABLA_NOMBRE': tabla.nombre,
                 'COLUMNAS': ",\n".join([campo.representacion_en_columna() for campo in tabla.campos])
         }
-        una_tabla = DB_TABLA_TEMPLATE.format(**data)
+        una_tabla = constants.DB_TABLA_TEMPLATE.format(**data)
         archivo_db_management.write(una_tabla)
 
     for tabla in manager.tablas:
@@ -150,21 +144,21 @@ def crear_db_management(manager, path_proyecto):
                         'OBJ_REFERENCIADO': clave_foranea.nombre.capitalize(),
                         'BACKREF': "%ss"%tabla.nombre
                 }
-                str_propiedades += DB_MAPPER_PROPERTIES.format(**data)
+                str_propiedades += constants.DB_MAPPER_PROPERTIES.format(**data)
 
                 #properties_d:
                 data['OBJ_REFERENCIADO'] = 'd'+data['OBJ_REFERENCIADO']
-                str_propiedades_d += DB_MAPPER_PROPERTIES.format(**data)
+                str_propiedades_d += constants.DB_MAPPER_PROPERTIES.format(**data)
             str_propiedades += '})'
             str_propiedades_d += '})'
 
-        str_mapper = DB_MAPPER_BASE.format(**{
+        str_mapper = constants.DB_MAPPER_BASE.format(**{
                                                 'OBJETO':tabla.nombre.capitalize(),
                                                 'TABLA': tabla.nombre,
                                                 'PROPIEDADES': str_propiedades
             })
         archivo_db_management.write(str_mapper)
-        str_mapper = DB_MAPPER_BASE.format(**{
+        str_mapper = constants.DB_MAPPER_BASE.format(**{
                                                 'OBJETO':'d'+tabla.nombre.capitalize(),
                                                 'TABLA': tabla.nombre,
                                                 'PROPIEDADES': str_propiedades_d
@@ -172,7 +166,7 @@ def crear_db_management(manager, path_proyecto):
         archivo_db_management.write(str_mapper)
 
 
-    archivo_db_management.write(DB_FOOTER)
+    archivo_db_management.write(constants.DB_FOOTER)
     archivo_db_management.close()
 
 def crear_mainwindow(manager, path_proyecto):
@@ -183,9 +177,9 @@ def crear_mainwindow(manager, path_proyecto):
     archivo_mainwindow = open(nombre, 'w')
 
     
-    template_action = Template(GUI_ACTIONS_TEMPLATE)
-    template_widget = Template(GUI_WIDGET_TEMPLATE)
-    template_general = Template(GUI_TEMPLATE_GENERAL)
+    template_action = Template(constants.GUI_ACTIONS_TEMPLATE)
+    template_widget = Template(constants.GUI_WIDGET_TEMPLATE)
+    template_general = Template(constants.GUI_TEMPLATE_GENERAL)
     str_actions = '' #Se va llenando con los reemplazos de template_action
     str_widgets = '' #Se va llenando con los reemplazos de template_widgets
 
@@ -256,10 +250,10 @@ def crear_main(manager, path_proyecto):
     nombre = path_proyecto+'main.py'
     archivo_main = open(nombre, 'w')
 
-    template_main = Template(MAIN)
-    template_conexion_actions = Template(CONEXION_ACTION)
-    template_conexion_abm = Template(CONEXION_ABM)
-    template_callbacks = Template(MAIN_CALLBACKS_TEMPLATE)
+    template_main = Template(constants.MAIN)
+    template_conexion_actions = Template(constants.CONEXION_ACTION)
+    template_conexion_abm = Template(constants.CONEXION_ABM)
+    template_callbacks = Template(constants.MAIN_CALLBACKS_TEMPLATE)
     str_actions = '' #Se va llenando
     for tabla in manager.tablas:
         for action in ['Alta', 'Baja', 'Modificacion']:
@@ -335,7 +329,7 @@ def crear_styless_css(path):
     '''
     nombre = path+'styles.py'
     archivo_css = open(nombre, 'w')
-    archivo_css.write(CSS)
+    archivo_css.write(constants.CSS)
     archivo_css.close()
 
 def crear_dialogos(manager, path_dialogos):
@@ -349,7 +343,7 @@ def crear_dialogos(manager, path_dialogos):
         - path_dialogos: ruta al directorio en donde se van a crear los dialogos.
     '''
     #crear archivos utiles:
-    crear_utiles(path_dialogos)
+    crear_utiles(manager, path_dialogos)
     from constants import DIALOGOS_MAIN, DIALOGOS_FORANEAS
     template_dialog = Template(DIALOGOS_MAIN)
     template_foraneas = Template(DIALOGOS_FORANEAS)
@@ -394,12 +388,17 @@ def crear_dialogos(manager, path_dialogos):
         archivo_dialogo.close()
 
 
-def crear_utiles(path):
-    from constants import MODELO_TABLA_UTILES, CENTRAL_WIDGET_ABM
+def crear_utiles(manager, path):
+    # from constants import MODELO_TABLA_UTILES, CENTRAL_WIDGET_ABM
     f = open(path+'ModeloTabla.py', 'w')
-    f.write(MODELO_TABLA_UTILES)
+    f.write(constants.MODELO_TABLA_UTILES)
     f.close()
 
+    template_widget_ABM = Template(constants.CENTRAL_WIDGET_ABM)
+    contenido_widget_ABM = template_widget_ABM.safe_substitute({
+            'MODELOS': manager.nombres_tablas_para_models()
+        }
+    )
     f = open(path+'widgetABM.py', 'w') #Generico...
-    f.write(CENTRAL_WIDGET_ABM)
+    f.write(contenido_widget_ABM)
     f.close()
